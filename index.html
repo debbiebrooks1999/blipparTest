@@ -1,0 +1,151 @@
+<html>
+<head> 
+    <style>
+        body { margin: 0; background: white;}
+    </style>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r124/three.min.js" integrity="sha512-jeYvJdyAYkpQCY/omvCYQo89qA5YxDW4JBT7COPsHT2sOAanwxkZRFeP9gc69b5reSDpZIoyCqZQZcWZkbB5Gw==" crossorigin="anonymous"></script>
+    <script src="https://cdn.rawgit.com/mrdoob/three.js/master/examples/js/loaders/GLTFLoader.js"></script>
+    <script src="https://threejs.org/examples/js/controls/OrbitControls.js"></script>
+    <script>
+
+        window.addEventListener('DOMContentLoaded', (event) => {
+
+                const scene = new THREE.Scene();
+                const camera = new THREE.PerspectiveCamera( 75, window.innerWidth / window.innerHeight, 0.1, 1000 );
+                var clock = new THREE.Clock();
+                var mixer;
+
+                const textureCam = new THREE.VideoTexture( video );
+
+                video = document.getElementById( 'video' );
+                scene.background = textureCam; 
+
+                const renderer = new THREE.WebGLRenderer();
+                renderer.setSize( window.innerWidth, window.innerHeight );
+              
+                document.body.appendChild( renderer.domElement );
+
+                //play the video texture 
+                window.addEventListener( 'resize', onWindowResize, false );
+
+                if ( navigator.mediaDevices && navigator.mediaDevices.getUserMedia ) {
+
+                    const constraints = { video: { width: 1280, height: 720 } };
+
+                    navigator.mediaDevices.getUserMedia( constraints ).then( function ( stream ) {
+
+                        // apply the stream to the video element used in the texture
+
+                        video.srcObject = stream;
+                        video.play();
+
+                    } ).catch( function ( error ) {
+
+                        console.error( 'Unable to access the camera/webcam.', error );
+
+                    } );
+
+                } else {
+
+                    console.error( 'MediaDevices interface not available.' );
+
+                }
+
+                const loader = new THREE.GLTFLoader();
+                loader.load( 'CM.glb', function ( gltf ) {
+
+                    mixer = new THREE.AnimationMixer( gltf.scene );
+                    var action = mixer.clipAction( gltf.animations[0]);
+
+                    action.play();
+                    scene.add( gltf.scene );
+
+                } );
+             
+               // LIGHTS
+
+				const intensity = 2.5;
+				const distance = 200;
+				const decay = 2.0;
+
+				const c1 = 0xff0040, c2 = 0x0040ff, c3 = 0x80ff80, c4 = 0xffaa00, c5 = 0x00ffaa, c6 = 0xff1100;
+
+				const sphere = new THREE.SphereBufferGeometry( 0.25, 16, 8 );
+                
+                light1 = new THREE.PointLight( 0xff0040, 2, 50 );
+				light1.add( new THREE.Mesh( sphere, new THREE.MeshBasicMaterial( { color: 0xff0040 } ) ) );
+				scene.add( light1 );
+
+				light2 = new THREE.PointLight( 0x0040ff, 2, 50 );
+				light2.add( new THREE.Mesh( sphere, new THREE.MeshBasicMaterial( { color: 0x0040ff } ) ) );
+				scene.add( light2 );
+
+				light3 = new THREE.PointLight( 0x80ff80, 2, 50 );
+				light3.add( new THREE.Mesh( sphere, new THREE.MeshBasicMaterial( { color: 0x80ff80 } ) ) );
+				scene.add( light3 );
+
+				light4 = new THREE.PointLight( 0xffaa00, 2, 50 );
+				light4.add( new THREE.Mesh( sphere, new THREE.MeshBasicMaterial( { color: 0xffaa00 } ) ) );
+				scene.add( light4 );
+
+                const light = new THREE.PointLight( 0xffffff, 5, 100 );
+                light.position.set( 50, 50, 50 );
+                scene.add( light );
+
+                camera.position.z = 3;
+
+          
+            const animate = function () {
+
+                requestAnimationFrame( animate );
+                var delta = clock.getDelta();
+                if ( mixer ) mixer.update( delta );
+            
+                const time = Date.now() * 0.00025;
+				const d = 150;
+
+                light1.position.x = Math.sin( time * 0.7 ) * 30;
+				light1.position.y = Math.cos( time * 0.5 ) * 40;
+				light1.position.z = Math.cos( time * 0.3 ) * 30;
+
+				light2.position.x = Math.cos( time * 0.3 ) * 30;
+				light2.position.y = Math.sin( time * 0.5 ) * 40;
+				light2.position.z = Math.sin( time * 0.7 ) * 30;
+
+				light3.position.x = Math.sin( time * 0.7 ) * 30;
+				light3.position.y = Math.cos( time * 0.3 ) * 40;
+				light3.position.z = Math.sin( time * 0.5 ) * 30;
+
+				light4.position.x = Math.sin( time * 0.3 ) * 30;
+				light4.position.y = Math.cos( time * 0.7 ) * 40;
+				light4.position.z = Math.sin( time * 0.5 ) * 30;
+
+                renderer.render( scene, camera );
+            };
+
+            animate();
+
+            
+            function onWindowResize() {
+
+                camera.aspect = window.innerWidth / window.innerHeight;
+                camera.updateProjectionMatrix();
+
+                renderer.setSize( window.innerWidth, window.innerHeight );
+
+            }
+        });
+     
+    </script>
+
+</head>
+<body>
+
+    <video id="video" muted style="display:none"></video>
+    <audio autoplay loop>
+        <source src="audio_clip.m4a"type="audio/mpeg">
+        Your browser does not support the audio element.
+   </audio>
+
+</body>
+</html>
