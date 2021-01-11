@@ -5,7 +5,7 @@
     </style>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r124/three.min.js" integrity="sha512-jeYvJdyAYkpQCY/omvCYQo89qA5YxDW4JBT7COPsHT2sOAanwxkZRFeP9gc69b5reSDpZIoyCqZQZcWZkbB5Gw==" crossorigin="anonymous"></script>
     <script src="https://cdn.rawgit.com/mrdoob/three.js/master/examples/js/loaders/GLTFLoader.js"></script>
-    <script src="https://threejs.org/examples/js/controls/OrbitControls.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/tween.js/16.3.5/Tween.min.js"></script>
     <script>
 
         window.addEventListener('DOMContentLoaded', (event) => {
@@ -13,7 +13,7 @@
                 const scene = new THREE.Scene();
                 const camera = new THREE.PerspectiveCamera( 75, window.innerWidth / window.innerHeight, 0.1, 1000 );
                 var clock = new THREE.Clock();
-                var mixer;
+                var mixer, model;
 
                 const textureCam = new THREE.VideoTexture( video );
 
@@ -30,7 +30,7 @@
 
                 if ( navigator.mediaDevices && navigator.mediaDevices.getUserMedia ) {
 
-                    const constraints = { video: { width: 1280, height: 720 } };
+                    const constraints = { audio: false, video: { facingMode: { exact: "environment" } } };
 
                     navigator.mediaDevices.getUserMedia( constraints ).then( function ( stream ) {
 
@@ -53,16 +53,20 @@
 
                 const loader = new THREE.GLTFLoader();
                 loader.load( 'CM.glb', function ( gltf ) {
-
+                  
+                    model = gltf.scene;
                     mixer = new THREE.AnimationMixer( gltf.scene );
                     var action = mixer.clipAction( gltf.animations[0]);
 
                     action.play();
                     scene.add( gltf.scene );
 
+                    model.position.x = -1;
+
                 } );
              
-               // LIGHTS
+
+                // LIGHTS
 
 				const intensity = 2.5;
 				const distance = 200;
@@ -94,10 +98,12 @@
 
                 camera.position.z = 3;
 
+
           
             const animate = function () {
 
                 requestAnimationFrame( animate );
+
                 var delta = clock.getDelta();
                 if ( mixer ) mixer.update( delta );
             
@@ -118,9 +124,17 @@
 
 				light4.position.x = Math.sin( time * 0.3 ) * 30;
 				light4.position.y = Math.cos( time * 0.7 ) * 40;
-				light4.position.z = Math.sin( time * 0.5 ) * 30;
+                light4.position.z = Math.sin( time * 0.5 ) * 30;
+                
+
+                 if (model) model.position.z += 0.0025;
+                 if (model) model.position.x += 0.0025;
+                 if (model) model.position.y -= 0.001;
+                 if (model) model.rotation.y += 0.001;
 
                 renderer.render( scene, camera );
+
+
             };
 
             animate();
@@ -134,6 +148,9 @@
                 renderer.setSize( window.innerWidth, window.innerHeight );
 
             }
+
+        
+
         });
      
     </script>
@@ -143,7 +160,7 @@
 
     <video id="video" muted style="display:none"></video>
     <audio autoplay loop>
-        <source src="audio_clip.m4a"type="audio/mpeg">
+        <source src="audio_clip.m4a" type="audio/mpeg">
         Your browser does not support the audio element.
    </audio>
 
